@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"reply/internal/domain"
+	"reply/internal/page"
 	"reply/internal/repository"
 	"reply/internal/repository/req"
 	req2 "reply/internal/service/req"
+	"reply/internal/service/res"
 	"time"
 )
 
@@ -88,4 +90,23 @@ func (s Service) Patch(ctx context.Context, p req2.Patch) error {
 func (s Service) Delete(ctx context.Context, id int) error {
 	err := s.repo.Delete(ctx, id)
 	return err
+}
+
+func (s Service) GetListTotal(ctx context.Context, boardId int, reqPage page.ReqPage) ([]res.GetListTotal, int, error) {
+	domains, total, err := s.repo.GetListTotal(ctx, boardId, reqPage)
+	if err != nil {
+		return []res.GetListTotal{}, 0, err
+	}
+	result := make([]res.GetListTotal, len(domains))
+	for i, d := range domains {
+		v := d.ToInfo()
+		result[i] = res.GetListTotal{
+			Id:            v.Id,
+			Writer:        v.Writer,
+			Content:       v.Content,
+			CreatedAt:     v.CreatedAt,
+			LastUpdatedAt: v.LastUpdatedAt,
+		}
+	}
+	return result, total, nil
 }

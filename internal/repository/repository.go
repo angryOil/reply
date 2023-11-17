@@ -6,6 +6,7 @@ import (
 	"github.com/uptrace/bun"
 	"log"
 	"reply/internal/domain"
+	"reply/internal/page"
 	"reply/internal/repository/model"
 	"reply/internal/repository/req"
 )
@@ -82,4 +83,14 @@ func (r Repository) Delete(ctx context.Context, id int) error {
 		return errors.New(InternalServerError)
 	}
 	return nil
+}
+
+func (r Repository) GetListTotal(ctx context.Context, boardId int, reqPage page.ReqPage) ([]domain.Reply, int, error) {
+	var models []model.Reply
+	total, err := r.db.NewSelect().Model(&models).Where("board_id = ?", boardId).Limit(reqPage.Size).Offset(reqPage.Offset).ScanAndCount(ctx)
+	if err != nil {
+		log.Println("GetListTotal NewSelect err: ", err)
+		return []domain.Reply{}, 0, errors.New(InternalServerError)
+	}
+	return model.ToDomainList(models), total, nil
 }

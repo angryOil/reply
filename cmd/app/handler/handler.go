@@ -3,9 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"reply/internal/controller"
 	"reply/internal/controller/req"
+	"reply/internal/controller/res"
+	"reply/internal/page"
 	"strconv"
 )
 
@@ -16,6 +19,8 @@ type Handler struct {
 func NewHandler(c controller.Controller) http.Handler {
 	r := mux.NewRouter()
 	h := Handler{c: c}
+	r.HandleFunc("/replies/cnt", h.getCountList).Methods(http.MethodGet)
+	r.HandleFunc("/replies/{boardId:[0-9]+}", h.getList).Methods(http.MethodGet)
 	r.HandleFunc("/replies/{cafeId:[0-9]+}/{boardId:[0-9]+}", h.create).Methods(http.MethodPost)
 	r.HandleFunc("/replies/{id}", h.patch).Methods(http.MethodPatch)
 	r.HandleFunc("/replies/{id}", h.delete).Methods(http.MethodDelete)
@@ -23,9 +28,10 @@ func NewHandler(c controller.Controller) http.Handler {
 }
 
 const (
-	InvalidId      = "invalid reply id"
-	InvalidCafeId  = "invalid cafe id"
-	InvalidBoardId = "invalid board id"
+	InternalServerError = "internal server error"
+	InvalidId           = "invalid reply id"
+	InvalidCafeId       = "invalid cafe id"
+	InvalidBoardId      = "invalid board id"
 )
 
 func (h Handler) create(w http.ResponseWriter, r *http.Request) {
@@ -87,4 +93,35 @@ func (h Handler) delete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (h Handler) getList(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	boardId, err := strconv.Atoi(vars["boardId"])
+	if err != nil {
+		http.Error(w, InvalidBoardId, http.StatusBadRequest)
+		return
+	}
+	reqPage := page.GetPageReqByRequest(r)
+	list, total, err := h.c.GetList(r.Context(), boardId, reqPage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	listTotalDto := res.ListTotalDto{
+		Content: list,
+		Total:   total,
+	}
+	data, err := json.Marshal(listTotalDto)
+	if err != nil {
+		log.Println("getList json.Marshal err: ", err)
+		http.Error(w, InternalServerError, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(data)
+}
+
+func (h Handler) getCountList(w http.ResponseWriter, r *http.Request) {
+
 }

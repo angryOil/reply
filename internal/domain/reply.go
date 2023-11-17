@@ -13,6 +13,7 @@ type Reply interface {
 	ValidUpdate() error
 
 	Update(content string) (Reply, error)
+	ToDetail() vo.Detail
 	ToInfo() vo.Info
 	ToUpdate() vo.Update
 }
@@ -36,6 +37,28 @@ func (r *reply) ToUpdate() vo.Update {
 		Content:       r.content,
 		CreatedAt:     r.createdAt,
 		LastUpdatedAt: r.lastUpdatedAt,
+	}
+}
+
+func (r *reply) ToDetail() vo.Detail {
+	return vo.Detail{
+		Id:            r.id,
+		CafeId:        r.cafeId,
+		BoardId:       r.boardId,
+		Writer:        r.writer,
+		Content:       r.content,
+		CreatedAt:     convertTimeToString(r.createdAt),
+		LastUpdatedAt: convertTimeToString(r.lastUpdatedAt),
+	}
+}
+
+func (r *reply) ToInfo() vo.Info {
+	return vo.Info{
+		Id:            r.id,
+		Writer:        r.writer,
+		Content:       r.content,
+		CreatedAt:     convertTimeToString(r.createdAt),
+		LastUpdatedAt: convertTimeToString(r.lastUpdatedAt),
 	}
 }
 
@@ -67,18 +90,6 @@ func (r *reply) ValidUpdate() error {
 		return errors.New(InvalidContent)
 	}
 	return nil
-}
-
-func (r *reply) ToInfo() vo.Info {
-	return vo.Info{
-		Id:            r.id,
-		CafeId:        r.cafeId,
-		BoardId:       r.boardId,
-		Writer:        r.writer,
-		Content:       r.content,
-		CreatedAt:     convertTimeToString(r.createdAt),
-		LastUpdatedAt: convertTimeToString(r.lastUpdatedAt),
-	}
 }
 
 func (r *reply) Update(content string) (Reply, error) {
