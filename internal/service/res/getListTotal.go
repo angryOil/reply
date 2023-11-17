@@ -1,6 +1,6 @@
-package vo
+package res
 
-type Info struct {
+type GetListTotal struct {
 	Id            int
 	Writer        int
 	Content       string
