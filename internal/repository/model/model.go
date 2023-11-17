@@ -29,6 +29,18 @@ func ToCreateModel(c req.Create) Reply {
 	}
 }
 
+func ToPatchModel(p req.Patch) Reply {
+	return Reply{
+		Id:            p.Id,
+		CafeId:        p.CafeId,
+		BoardId:       p.BoardId,
+		Writer:        p.Writer,
+		Content:       p.Content,
+		CreatedAt:     p.CreatedAt,
+		LastUpdatedAt: p.LastUpdatedAt,
+	}
+}
+
 func (r Reply) ToDomain() domain.Reply {
 	return domain.NewBuilder().
 		Id(r.Id).

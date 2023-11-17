@@ -24,3 +24,11 @@ func (c Controller) Create(ctx context.Context, cafeId int, boardId int, create 
 	})
 	return err
 }
+
+func (c Controller) Patch(ctx context.Context, id int, p req.Patch) error {
+	err := c.s.Patch(ctx, req2.Patch{
+		Id:      id,
+		Content: p.Content,
+	})
+	return err
+}

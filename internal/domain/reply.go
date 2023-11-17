@@ -12,8 +12,9 @@ type Reply interface {
 	ValidCreate() error
 	ValidUpdate() error
 
-	update(content string) Reply
+	Update(content string) (Reply, error)
 	ToInfo() vo.Info
+	ToUpdate() vo.Update
 }
 
 type reply struct {
@@ -24,6 +25,18 @@ type reply struct {
 	content       string
 	createdAt     time.Time
 	lastUpdatedAt time.Time
+}
+
+func (r *reply) ToUpdate() vo.Update {
+	return vo.Update{
+		Id:            r.id,
+		CafeId:        r.cafeId,
+		BoardId:       r.boardId,
+		Writer:        r.writer,
+		Content:       r.content,
+		CreatedAt:     r.createdAt,
+		LastUpdatedAt: r.lastUpdatedAt,
+	}
 }
 
 const (
@@ -68,10 +81,14 @@ func (r *reply) ToInfo() vo.Info {
 	}
 }
 
-func (r *reply) update(content string) Reply {
+func (r *reply) Update(content string) (Reply, error) {
 	r.content = content
 	r.lastUpdatedAt = time.Now()
-	return r
+	err := r.ValidUpdate()
+	if err != nil {
+		return r, err
+	}
+	return r, nil
 }
 
 var koreaZone, _ = time.LoadLocation("Asia/Seoul")
