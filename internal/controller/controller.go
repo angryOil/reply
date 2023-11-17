@@ -32,3 +32,8 @@ func (c Controller) Patch(ctx context.Context, id int, p req.Patch) error {
 	})
 	return err
 }
+
+func (c Controller) Delete(ctx context.Context, id int) error {
+	err := c.s.Delete(ctx, id)
+	return err
+}

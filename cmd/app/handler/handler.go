@@ -18,6 +18,7 @@ func NewHandler(c controller.Controller) http.Handler {
 	h := Handler{c: c}
 	r.HandleFunc("/replies/{cafeId:[0-9]+}/{boardId:[0-9]+}", h.create).Methods(http.MethodPost)
 	r.HandleFunc("/replies/{id}", h.patch).Methods(http.MethodPatch)
+	r.HandleFunc("/replies/{id}", h.delete).Methods(http.MethodDelete)
 	return r
 }
 
@@ -68,6 +69,20 @@ func (h Handler) patch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.c.Patch(r.Context(), id, p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h Handler) delete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, InvalidId, http.StatusBadRequest)
+		return
+	}
+	err = h.c.Delete(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

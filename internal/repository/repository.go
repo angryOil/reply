@@ -73,3 +73,13 @@ func (r Repository) Update(ctx context.Context, id int,
 	}
 	return nil
 }
+
+func (r Repository) Delete(ctx context.Context, id int) error {
+	var m model.Reply
+	_, err := r.db.NewDelete().Model(&m).Where("id = ? ", id).Exec(ctx)
+	if err != nil {
+		log.Println("Delete NewDelete err: ", err)
+		return errors.New(InternalServerError)
+	}
+	return nil
+}
