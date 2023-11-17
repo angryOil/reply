@@ -10,6 +10,7 @@ import (
 	"reply/internal/controller/res"
 	"reply/internal/page"
 	"strconv"
+	"strings"
 )
 
 type Handler struct {
@@ -123,5 +124,38 @@ func (h Handler) getList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) getCountList(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("board-ids")
+	if q == "" {
+		http.Error(w, InvalidBoardId, http.StatusBadRequest)
+		return
+	}
+	boardIdsArr := stringToIntArr(q)
+	cntArr, err := h.c.GetCountList(r.Context(), boardIdsArr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	listDto := res.CountListDto{Content: cntArr}
+	data, err := json.Marshal(listDto)
+	if err != nil {
+		log.Println("getCountList json.Marshal err: ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(data)
+}
 
+func stringToIntArr(s string) []int {
+	s = strings.ReplaceAll(s, " ", "")
+	sArr := strings.Split(s, ",")
+	intArr := make([]int, 0)
+	for _, s := range sArr {
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			continue
+		}
+		intArr = append(intArr, i)
+	}
+	return intArr
 }

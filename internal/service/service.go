@@ -110,3 +110,18 @@ func (s Service) GetListTotal(ctx context.Context, boardId int, reqPage page.Req
 	}
 	return result, total, nil
 }
+
+func (s Service) GetCountList(ctx context.Context, arr []int) ([]res.GetCountList, error) {
+	list, err := s.repo.GetCountList(ctx, arr)
+	if err != nil {
+		return []res.GetCountList{}, err
+	}
+	dto := make([]res.GetCountList, len(list))
+	for i, l := range list {
+		dto[i] = res.GetCountList{
+			BoardId: l.BoardId,
+			Count:   l.Count,
+		}
+	}
+	return dto, err
+}

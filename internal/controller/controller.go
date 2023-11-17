@@ -57,3 +57,18 @@ func (c Controller) GetList(ctx context.Context, boardId int, reqPage page.ReqPa
 	}
 	return dto, total, nil
 }
+
+func (c Controller) GetCountList(ctx context.Context, idArr []int) ([]res.GetCountList, error) {
+	list, err := c.s.GetCountList(ctx, idArr)
+	if err != nil {
+		return []res.GetCountList{}, err
+	}
+	dto := make([]res.GetCountList, len(list))
+	for i, l := range list {
+		dto[i] = res.GetCountList{
+			BoardId:    l.BoardId,
+			ReplyCount: l.Count,
+		}
+	}
+	return dto, nil
+}

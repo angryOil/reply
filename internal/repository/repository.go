@@ -9,6 +9,7 @@ import (
 	"reply/internal/page"
 	"reply/internal/repository/model"
 	"reply/internal/repository/req"
+	"reply/internal/repository/res"
 )
 
 type Repository struct {
@@ -93,4 +94,21 @@ func (r Repository) GetListTotal(ctx context.Context, boardId int, reqPage page.
 		return []domain.Reply{}, 0, errors.New(InternalServerError)
 	}
 	return model.ToDomainList(models), total, nil
+}
+
+func (r Repository) GetCountList(ctx context.Context, arr []int) ([]res.GetCountList, error) {
+	list := make([]res.GetCountList, len(arr))
+	var m model.Reply
+	for i, boardId := range arr {
+		cnt, err := r.db.NewSelect().Model(&m).Where("board_id = ?", boardId).Count(ctx)
+		if err != nil {
+			log.Println("GetCountList NewSelect err: ", err)
+			return []res.GetCountList{}, errors.New(InternalServerError)
+		}
+		list[i] = res.GetCountList{
+			BoardId: boardId,
+			Count:   cnt,
+		}
+	}
+	return list, nil
 }
