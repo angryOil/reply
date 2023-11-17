@@ -3,11 +3,12 @@ package model
 import (
 	"github.com/uptrace/bun"
 	"reply/internal/domain"
+	"reply/internal/repository/req"
 	"time"
 )
 
 type Reply struct {
-	bun.BaseModel `bun:"table:board,alias:b"`
+	bun.BaseModel `bun:"table:reply,alias:r"`
 
 	Id            int       `bun:"id,pk,autoincrement"`
 	CafeId        int       `bun:"cafe_id,notnull"`
@@ -16,6 +17,16 @@ type Reply struct {
 	Content       string    `bun:"content,notnull"`
 	CreatedAt     time.Time `bun:"created_at"`
 	LastUpdatedAt time.Time `bun:"last_updated_at"`
+}
+
+func ToCreateModel(c req.Create) Reply {
+	return Reply{
+		CafeId:    c.CafeId,
+		BoardId:   c.BoardId,
+		Writer:    c.Writer,
+		Content:   c.Content,
+		CreatedAt: c.CreatedAt,
+	}
 }
 
 func (r Reply) ToDomain() domain.Reply {
